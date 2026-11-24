@@ -1,0 +1,476 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+
+local player = Players.LocalPlayer
+local CORRECT_KEY = "ChillixV13GiaBinhBaKhiKey - KsksjwnwkoLkshwowoweho"
+local GET_KEY_LINK = "https://link4m.org/MIF7f"
+local SCRIPT_URL = "https://raw.githubusercontent.com/nguyengiabinh20111-debug/Gbinh/main/Giabinh.lua"
+
+local KEY_DURATION = 24 * 60 * 60
+local SAVE_FILE = "ChilliVenyxDivineV13_SavedKey.json"
+
+local oldGui = CoreGui:FindFirstChild("ChilliVenyxDivineKeySystem")
+if oldGui then
+	oldGui:Destroy()
+end
+
+local function loadMainScript()
+	local ok, err = pcall(function()
+		loadstring(game:HttpGet(SCRIPT_URL))()
+	end)
+	if not ok then
+		warn("[Chilli X Venyx X Divine V13] Failed to load main script: " .. tostring(err))
+	end
+end
+
+local function hasFileIO()
+	return type(writefile) == "function"
+		and type(readfile) == "function"
+		and type(isfile) == "function"
+end
+
+local function saveVerifiedKey(keyValue)
+	if not hasFileIO() then
+		return
+	end
+	pcall(function()
+		local payload = HttpService:JSONEncode({
+			key = keyValue,
+			savedAt = os.time()
+		})
+		writefile(SAVE_FILE, payload)
+	end)
+end
+
+local function loadSavedKey()
+	if not hasFileIO() then
+		return nil
+	end
+	local ok, data = pcall(function()
+		if not isfile(SAVE_FILE) then
+			return nil
+		end
+		local raw = readfile(SAVE_FILE)
+		return HttpService:JSONDecode(raw)
+	end)
+	if not ok or type(data) ~= "table" then
+		return nil
+	end
+	if type(data.key) ~= "string" or type(data.savedAt) ~= "number" then
+		return nil
+	end
+	if data.key ~= CORRECT_KEY then
+		return nil
+	end
+	if (os.time() - data.savedAt) >= KEY_DURATION then
+		pcall(function()
+			if type(delfile) == "function" and isfile(SAVE_FILE) then
+				delfile(SAVE_FILE)
+			end
+		end)
+		return nil
+	end
+	return data.key
+end
+
+local function setClipboardSafe(text)
+	if setclipboard then
+		setclipboard(text)
+		return true
+	elseif toclipboard then
+		toclipboard(text)
+		return true
+	end
+	return false
+end
+
+local function pickFont(candidates, fallback)
+	for _, name in ipairs(candidates) do
+		local ok, fontEnum = pcall(function()
+			return Enum.Font[name]
+		end)
+		if ok and fontEnum then
+			return fontEnum
+		end
+	end
+	return fallback
+end
+
+local TITLE_FONT = pickFont({ "Michroma", "Fredoka", "GothamBlack" }, Enum.Font.GothamBold)
+local SUBTITLE_FONT = pickFont({ "Fredoka", "GothamMedium" }, Enum.Font.GothamMedium)
+local BODY_FONT = pickFont({ "Fredoka", "GothamMedium" }, Enum.Font.GothamMedium)
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ChilliVenyxDivineKeySystem"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local parentOk = pcall(function()
+	screenGui.Parent = CoreGui
+end)
+if not parentOk then
+	screenGui.Parent = player:WaitForChild("PlayerGui")
+end
+
+-- Main translucent blue-purple frame
+local BASE_POS = UDim2.new(0.5, -235, 0.5, -154)
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 470, 0, 308)
+mainFrame.Position = BASE_POS
+mainFrame.BackgroundColor3 = Color3.fromRGB(28, 22, 64)
+mainFrame.BackgroundTransparency = 0.28
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 20)
+mainCorner.Parent = mainFrame
+
+local mainGradient = Instance.new("UIGradient")
+mainGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(36, 98, 220)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(84, 52, 190)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(145, 45, 215))
+})
+mainGradient.Rotation = 25
+mainGradient.Parent = mainFrame
+
+local defaultStrokeColor = Color3.fromRGB(155, 135, 255)
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = defaultStrokeColor
+mainStroke.Thickness = 1.6
+mainStroke.Transparency = 0.2
+mainStroke.Parent = mainFrame
+
+-- Centered Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -88, 0, 32)
+titleLabel.Position = UDim2.new(0.5, 0, 0, 10)
+titleLabel.AnchorPoint = Vector2.new(0.5, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Chilli X Venyx X Divine V13"
+titleLabel.TextColor3 = Color3.fromRGB(246, 244, 255)
+titleLabel.TextSize = 20
+titleLabel.Font = TITLE_FONT
+titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+titleLabel.TextYAlignment = Enum.TextYAlignment.Center
+titleLabel.Parent = mainFrame
+
+local titleGradient = Instance.new("UIGradient")
+titleGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(125, 215, 255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(240, 232, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 135, 255))
+})
+titleGradient.Parent = titleLabel
+
+-- Small subtitle directly under the title
+local subTitleLabel = Instance.new("TextLabel")
+subTitleLabel.Size = UDim2.new(1, -60, 0, 20)
+subTitleLabel.Position = UDim2.new(0.5, 0, 0, 42)
+subTitleLabel.AnchorPoint = Vector2.new(0.5, 0)
+subTitleLabel.BackgroundTransparency = 1
+subTitleLabel.Text = "Please Enter Key Here"
+subTitleLabel.TextColor3 = Color3.fromRGB(198, 190, 255)
+subTitleLabel.TextSize = 12
+subTitleLabel.Font = SUBTITLE_FONT
+subTitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+subTitleLabel.TextYAlignment = Enum.TextYAlignment.Center
+subTitleLabel.Parent = mainFrame
+
+-- Close button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 32, 0, 32)
+closeBtn.Position = UDim2.new(1, -46, 0, 15)
+closeBtn.BackgroundColor3 = Color3.fromRGB(165, 135, 255)
+closeBtn.BackgroundTransparency = 0.7
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.fromRGB(250, 248, 255)
+closeBtn.TextSize = 14
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 10)
+closeCorner.Parent = closeBtn
+
+closeBtn.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+-- Centered divider
+local divider = Instance.new("Frame")
+divider.Size = UDim2.new(0.84, 0, 0, 2)
+divider.Position = UDim2.new(0.5, 0, 0, 68)
+divider.AnchorPoint = Vector2.new(0.5, 0)
+divider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+divider.BackgroundTransparency = 0.3
+divider.BorderSizePixel = 0
+divider.Parent = mainFrame
+
+local dividerCorner = Instance.new("UICorner")
+dividerCorner.CornerRadius = UDim.new(1, 0)
+dividerCorner.Parent = divider
+
+local dividerGradient = Instance.new("UIGradient")
+dividerGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(85, 175, 255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(170, 120, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(215, 95, 255))
+})
+dividerGradient.Parent = divider
+
+-- Clean Key Input (no text outline / stroke around text)
+local keyBox = Instance.new("TextBox")
+keyBox.Size = UDim2.new(0.86, 0, 0, 46)
+keyBox.Position = UDim2.new(0.5, 0, 0, 84)
+keyBox.AnchorPoint = Vector2.new(0.5, 0)
+keyBox.BackgroundColor3 = Color3.fromRGB(20, 16, 48)
+keyBox.BackgroundTransparency = 0.45
+keyBox.BorderSizePixel = 0
+keyBox.Text = ""
+keyBox.PlaceholderText = "Enter your key here..."
+keyBox.PlaceholderColor3 = Color3.fromRGB(185, 178, 235)
+keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBox.TextSize = 14
+keyBox.Font = BODY_FONT
+keyBox.TextXAlignment = Enum.TextXAlignment.Center
+keyBox.TextYAlignment = Enum.TextYAlignment.Center
+keyBox.ClearTextOnFocus = false
+keyBox.TextWrapped = true
+keyBox.Parent = mainFrame
+
+local keyCorner = Instance.new("UICorner")
+keyCorner.CornerRadius = UDim.new(0, 12)
+keyCorner.Parent = keyBox
+
+-- Modern centered status banner
+local noticeCard = Instance.new("Frame")
+noticeCard.Size = UDim2.new(0.86, 0, 0, 48)
+noticeCard.Position = UDim2.new(0.5, 0, 0, 144)
+noticeCard.AnchorPoint = Vector2.new(0.5, 0)
+noticeCard.BackgroundColor3 = Color3.fromRGB(108, 82, 235)
+noticeCard.BackgroundTransparency = 0.56
+noticeCard.BorderSizePixel = 0
+noticeCard.Parent = mainFrame
+
+local noticeCorner = Instance.new("UICorner")
+noticeCorner.CornerRadius = UDim.new(0, 12)
+noticeCorner.Parent = noticeCard
+
+local noticeStroke = Instance.new("UIStroke")
+noticeStroke.Color = Color3.fromRGB(170, 150, 255)
+noticeStroke.Thickness = 1.2
+noticeStroke.Transparency = 0.3
+noticeStroke.Parent = noticeCard
+
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, -20, 1, 0)
+statusLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+statusLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Enter a valid key to unlock the script"
+statusLabel.TextColor3 = Color3.fromRGB(240, 236, 255)
+statusLabel.TextSize = 13
+statusLabel.Font = BODY_FONT
+statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+statusLabel.TextYAlignment = Enum.TextYAlignment.Center
+statusLabel.TextWrapped = true
+statusLabel.Parent = noticeCard
+
+-- Clear, prominent action buttons
+local buttonRow = Instance.new("Frame")
+buttonRow.Size = UDim2.new(0.86, 0, 0, 48)
+buttonRow.Position = UDim2.new(0.5, 0, 1, -66)
+buttonRow.AnchorPoint = Vector2.new(0.5, 0)
+buttonRow.BackgroundTransparency = 1
+buttonRow.Parent = mainFrame
+
+local checkBtn = Instance.new("TextButton")
+checkBtn.Size = UDim2.new(0.485, 0, 1, 0)
+checkBtn.Position = UDim2.new(0, 0, 0, 0)
+checkBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+checkBtn.BackgroundTransparency = 0.05
+checkBtn.Text = "Check Key"
+checkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+checkBtn.TextSize = 15
+checkBtn.Font = TITLE_FONT
+checkBtn.TextXAlignment = Enum.TextXAlignment.Center
+checkBtn.TextYAlignment = Enum.TextYAlignment.Center
+checkBtn.Parent = buttonRow
+
+local checkCorner = Instance.new("UICorner")
+checkCorner.CornerRadius = UDim.new(0, 12)
+checkCorner.Parent = checkBtn
+
+local checkGradient = Instance.new("UIGradient")
+checkGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(55, 135, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(168, 65, 255))
+})
+checkGradient.Rotation = 12
+checkGradient.Parent = checkBtn
+
+local checkStroke = Instance.new("UIStroke")
+checkStroke.Color = Color3.fromRGB(205, 185, 255)
+checkStroke.Thickness = 1.4
+checkStroke.Transparency = 0.15
+checkStroke.Parent = checkBtn
+
+local getKeyBtn = Instance.new("TextButton")
+getKeyBtn.Size = UDim2.new(0.485, 0, 1, 0)
+getKeyBtn.Position = UDim2.new(1, 0, 0, 0)
+getKeyBtn.AnchorPoint = Vector2.new(1, 0)
+getKeyBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+getKeyBtn.BackgroundTransparency = 0.08
+getKeyBtn.Text = "Get Key"
+getKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+getKeyBtn.TextSize = 15
+getKeyBtn.Font = TITLE_FONT
+getKeyBtn.TextXAlignment = Enum.TextXAlignment.Center
+getKeyBtn.TextYAlignment = Enum.TextYAlignment.Center
+getKeyBtn.Parent = buttonRow
+
+local getKeyCorner = Instance.new("UICorner")
+getKeyCorner.CornerRadius = UDim.new(0, 12)
+getKeyCorner.Parent = getKeyBtn
+
+local getKeyGradient = Instance.new("UIGradient")
+getKeyGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(145, 65, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 155, 255))
+})
+getKeyGradient.Rotation = 12
+getKeyGradient.Parent = getKeyBtn
+
+local getKeyStroke = Instance.new("UIStroke")
+getKeyStroke.Color = Color3.fromRGB(205, 185, 255)
+getKeyStroke.Thickness = 1.4
+getKeyStroke.Transparency = 0.15
+getKeyStroke.Parent = getKeyBtn
+
+-- Modern notification update
+local function setNotice(kind, text)
+	statusLabel.Text = text
+
+	local bgColor = Color3.fromRGB(108, 82, 235)
+	local borderColor = Color3.fromRGB(170, 150, 255)
+	local textColor = Color3.fromRGB(240, 236, 255)
+
+	if kind == "error" then
+		bgColor = Color3.fromRGB(150, 38, 98)
+		borderColor = Color3.fromRGB(255, 95, 155)
+		textColor = Color3.fromRGB(255, 220, 236)
+	elseif kind == "success" then
+		bgColor = Color3.fromRGB(45, 125, 230)
+		borderColor = Color3.fromRGB(125, 225, 255)
+		textColor = Color3.fromRGB(228, 250, 255)
+	elseif kind == "info" then
+		bgColor = Color3.fromRGB(118, 72, 230)
+		borderColor = Color3.fromRGB(200, 135, 255)
+		textColor = Color3.fromRGB(245, 236, 255)
+	end
+
+	TweenService:Create(
+		noticeCard,
+		TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ BackgroundColor3 = bgColor }
+	):Play()
+
+	TweenService:Create(
+		noticeStroke,
+		TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ Color = borderColor }
+	):Play()
+
+	statusLabel.TextColor3 = textColor
+
+	noticeCard.Size = UDim2.new(0.84, 0, 0, 46)
+	TweenService:Create(
+		noticeCard,
+		TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Size = UDim2.new(0.86, 0, 0, 48) }
+	):Play()
+end
+
+-- Smooth shake + clear input on invalid key
+local isShaking = false
+local function triggerError(msg, clearInput)
+	if clearInput then
+		keyBox.Text = ""
+	end
+
+	setNotice("error", "[!] " .. msg)
+	warn("[Chilli X Venyx X Divine V13] " .. msg)
+
+	if isShaking then
+		return
+	end
+	isShaking = true
+
+	mainStroke.Color = Color3.fromRGB(255, 95, 155)
+
+	task.spawn(function()
+		local offsets = { -8, 7, -5, 4, -2, 1, 0 }
+		for _, dx in ipairs(offsets) do
+			local tween = TweenService:Create(
+				mainFrame,
+				TweenInfo.new(0.045, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+				{ Position = BASE_POS + UDim2.new(0, dx, 0, 0) }
+			)
+			tween:Play()
+			tween.Completed:Wait()
+		end
+		mainFrame.Position = BASE_POS
+		task.wait(0.25)
+		mainStroke.Color = defaultStrokeColor
+		isShaking = false
+	end)
+end
+
+local function unlockAndRun(keyValue)
+	saveVerifiedKey(keyValue)
+	setNotice("success", "Key verified! Loading Chilli X Venyx X Divine V13...")
+	task.wait(0.65)
+	screenGui:Destroy()
+	loadMainScript()
+end
+
+checkBtn.MouseButton1Click:Connect(function()
+	local enteredKey = (keyBox.Text or ""):match("^%s*(.-)%s*$") or ""
+
+	if enteredKey == "" then
+		triggerError("Please enter a key first.", false)
+		return
+	end
+
+	if enteredKey == CORRECT_KEY then
+		unlockAndRun(enteredKey)
+	else
+		triggerError("Invalid key! Please check and try again.", true)
+	end
+end)
+
+getKeyBtn.MouseButton1Click:Connect(function()
+	local copied = setClipboardSafe(GET_KEY_LINK)
+	if copied then
+		setNotice("info", "Get Key link copied to clipboard! Paste it in your browser.")
+	else
+		setNotice("info", "Get Key Link: " .. GET_KEY_LINK)
+	end
+end)
+
+-- Auto-unlock if a valid saved key exists within 24 hours
+local cachedKey = loadSavedKey()
+if cachedKey then
+	keyBox.Text = cachedKey
+	task.defer(function()
+		unlockAndRun(cachedKey)
+	end)
+end
